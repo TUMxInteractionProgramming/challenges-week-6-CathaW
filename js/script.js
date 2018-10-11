@@ -23,11 +23,39 @@ var currentLocation = {
     what3words: "shelf.jetted.purple"
 };
 
+//App initialization
+$(function(){
+    listChannels(compareNew);
+    loadEmojis();
+    console.log('App is initialized');
+
+    var reloadInterval = setInterval(updateMessages, 10*1000);
+    function updateMessages() {
+        console.log('Updating message elements...');
+        update();
+    }
+    
+    function update() {
+        ttl = ((currentChannel.messages[0].expiresOn-Date.now())/1000/60).toFixed(1);
+
+        $.each(currentChannel.messages, function() {
+            $(this).find('em').text(ttl + ' min. left');
+        });
+        if (ttl<5) {
+            $.each(currentChannel.messages, function() {
+                $(this).find('em').css('color', '#3F51B5');
+            });
+        }
+    }
+    
+
+});
+
 /**
  * Switch channels name in the right app bar
  * @param channelObject
  */
-function switchChannel(channelObject) {
+function switchChannel(channelObject, channelElement) {
     // Log the channel switch
     console.log("Tuning in to channel", channelObject);
 
@@ -52,10 +80,13 @@ function switchChannel(channelObject) {
     /* highlight the selected #channel.
        This is inefficient (jQuery has to search all channel list items), but we'll change it later on */
     $('#channels li').removeClass('selected');
-    $('#channels li:contains(' + channelObject.name + ')').addClass('selected');
+    $(channelElement).addClass('selected');
 
     /* store selected channel in global variable */
     currentChannel = channelObject;
+
+    showMessages();
+
 }
 
 /* liking a channel on #click */
@@ -126,6 +157,9 @@ function Message(text) {
     this.text = text;
     // own message
     this.own = true;
+    this.update = function() {
+        return Math.round((this.expiresOn - Date.now()) / 1000 / 60).toFixed(1);
+    }
 }
 
 function sendMessage() {
@@ -166,21 +200,20 @@ function sendMessage() {
  */
 function createMessageElement(messageObject) {
     // Calculating the expiresIn-time from the expiresOn-property
-    var expiresIn = Math.round((messageObject.expiresOn - Date.now()) / 1000 / 60);
+    var expiresIn = Math.round((((messageObject.expiresOn - Date.now()) / 1000 / 60)/10)*10).toFixed(1);
 
-    // Creating a message-element
-    return '<div class="message'+
-        //this dynamically adds #own to the #message, based on the
-        //ternary operator. We need () in order not to disrupt the return.
-        (messageObject.own ? ' own' : '') +
-        '">' +
-        '<h3><a href="http://w3w.co/' + messageObject.createdBy + '" target="_blank">'+
-        '<strong>' + messageObject.createdBy + '</strong></a>' +
-        messageObject.createdOn.toLocaleString() +
-        '<em>' + expiresIn + ' min. left</em></h3>' +
-        '<p>' + messageObject.text + '</p>' +
-        '<button class="accent">+5 min.</button>' +
-        '</div>';
+    // Creating a message-element as jQuery object
+    var messageDiv = $('<div>').addClass('message'+(messageObject.own ? ' own' : ''));
+    var messageH3 = $('<h3>').text(messageObject.createdOn.toLocaleString()).appendTo(messageDiv);
+    var messageA = $('<a href="http://w3w.co/' + messageObject.createdBy + '" target="_blank">').appendTo(messageH3);
+    $('<strong>').text(messageObject.createdBy).appendTo(messageA);
+    $('<em>').text(expiresIn + ' min. left').appendTo(messageH3);
+    $('<p>').text(messageObject.text).appendTo(messageDiv);
+    $('<button>').addClass('accent').text('+ 5 min.').appendTo(messageDiv);
+
+    currentChannel.messages.push(messageDiv);
+    
+    return messageDiv;
 }
 
 /* #10 Three #compare functions to #sort channels */
@@ -216,15 +249,19 @@ function compareFavorites(channelA, channelB) {
 
 function listChannels(criterion) {
     // #10 #sorting: #sort channels#array by the criterion #parameter
+    
     channels.sort(criterion);
 
     // #10 #sorting #duplicate: empty list
     $('#channels ul').empty();
-
+    
     /* #10 append channels from #array with a #for loop */
     for (i = 0; i < channels.length; i++) {
-        $('#channels ul').append(createChannelElement(channels[i]));
+        $('#channels ul').append(createChannelElement(channels[i])); 
     };
+    //current channel remains active and highlighted when sort order changes
+    $('#channels li:contains(' + currentChannel.name + ')').addClass('selected');
+    
 }
 
 /**
@@ -325,6 +362,11 @@ function createChannelElement(channelObject) {
     // The chevron
     $('<i>').addClass('fas').addClass('fa-chevron-right').appendTo(meta);
 
+    //Channels are highlighted again
+    channel.click(function(){
+        switchChannel(channelObject, this);
+    });
+
     // return the complete channel
     return channel;
 }
@@ -354,4 +396,12 @@ function abortCreationMode() {
     $('#app-bar-create').removeClass('show');
     $('#button-create').hide();
     $('#button-send').show();
+}
+
+//Messages stored in the channels' objects are shown for each channel individually
+function showMessages() {
+    $('#messages').empty();
+    $.each(currentChannel.messages, function(){
+        $('#messages').append(this);
+    });
 }

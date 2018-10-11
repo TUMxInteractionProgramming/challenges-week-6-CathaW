@@ -6,7 +6,8 @@ var yummy = {
     starred: false,
     expiresIn: 100,
     messageCount: 999,
-    messages : []           // #10 #message s property in #chl object
+    messages : [],  
+    element: []           // #10 #message s property in #chl object
 };
 
 var sevencontinents = {
@@ -16,8 +17,8 @@ var sevencontinents = {
     starred: true,
     expiresIn: 60,
     messageCount: 5,
-    messages : []           // #10 #message s property in #chl object
-
+    messages : [],  
+    element: []              // #10 #message s property in #chl object
 };
 
 var killerapp = {
@@ -27,8 +28,8 @@ var killerapp = {
     starred: false,
     expiresIn: 1,
     messageCount: 10351,
-    messages : []           // #10 #message s property in #chl object
-
+    messages : [],  
+    element: []         // #10 #message s property in #chl object
 };
 
 var firstpersononmars = {
@@ -38,8 +39,8 @@ var firstpersononmars = {
     starred: true,
     expiresIn: 30003,
     messageCount: 2424,
-    messages : []           // #10 #message s property in #chl object
-
+    messages : [],   
+    element: []             // #10 #message s property in #chl object
 };
 
 var octoberfest = {
@@ -49,6 +50,6 @@ var octoberfest = {
     starred: false,
     expiresIn: 60,
     messageCount: 321,
-    messages : []           // #10 #message s property in #chl object
-
+    messages : [],  
+    element: []              // #10 #message s property in #chl object
 };
