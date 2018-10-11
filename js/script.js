@@ -24,7 +24,7 @@ var currentLocation = {
 };
 
 //App initialization
-$(function(){
+$(document).ready(function(){
     listChannels(compareNew);
     loadEmojis();
     console.log('App is initialized');
